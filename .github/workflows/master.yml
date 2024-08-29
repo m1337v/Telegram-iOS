@@ -3,7 +3,9 @@ name: Master Release
 on:
   push:
     branches:
-      - master
+      - nicegram
+
+  workflow_dispatch:
 
 jobs:
   build:
