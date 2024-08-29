@@ -2,29 +2,17 @@ default_platform :ios
 
 require 'base64'
 require 'fileutils'
-require 'googleauth'
-require 'json'
-require 'spaceship'
 
-APP_STORE_CONNECT_API_KEY_ID = ENV["APP_STORE_CONNECT_API_KEY_ID"]
-APP_STORE_CONNECT_API_KEY_ISSUER_ID = ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"]
-APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT = ENV["APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT"]
+# Environment Variables
 BAZEL_LOCAL_CACHE = ENV["BAZEL_LOCAL_CACHE"]
 BAZEL_PATH = ENV["BAZEL_PATH"]
 BAZEL_REMOTE_CACHE = ENV["BAZEL_REMOTE_CACHE"]
 BAZEL_USER_ROOT = ENV["BAZEL_USER_ROOT"]
 BUILD_WORKING_DIR = ENV["BUILD_WORKING_DIR"]
 BUNDLE_ID = ENV["BUNDLE_ID"]
-GOOGLE_APPLICATION_CREDENTIALS_BASE64 = ENV["GOOGLE_APPLICATION_CREDENTIALS_BASE64"] 
-KEYCHAIN_NAME = ENV["KEYCHAIN_NAME"]
-KEYCHAIN_PASSWORD = ENV["KEYCHAIN_PASSWORD"]
 SIGN_URL = ENV["SIGN_URL"]
 SOURCE_PATH = ENV["SOURCE_PATH"]
 TEAM_ID = ENV["TEAM_ID"]
-TELEGRAM_BOT_TOKEN = ENV["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CONFIGURATION_TEST = ENV["TELEGRAM_CONFIGURATION_TEST"]
-TELEGRAM_CONFIGURATION_PROD = ENV["TELEGRAM_CONFIGURATION_PROD"]
-TELEGRAM_CHAT_ID = ENV["TELEGRAM_CHAT_ID"]
 
 base_app_identifier_llc = BUNDLE_ID || "app.nicegram"
 app_identifier_llc = [
@@ -39,27 +27,12 @@ app_identifier_llc = [
   base_app_identifier_llc + ".BroadcastUpload"
 ]
 
-lane :beta_build do |options|
-  build(
-    build_number: latest_testflight_build_number(
-      api_key: generate_app_store_connect_api_key(),
-      app_identifier: BUNDLE_ID
-    ) + 1,
-    upload_to_tf: true
-  )
-  
-  upload_dsyms()
-end
-
 lane :master_build do |options|
+  # Load the app version from versions.json
   versions = JSON.parse(File.read("#{SOURCE_PATH}/versions.json"))
   app_version = versions["app"]
 
-  build_number = latest_testflight_build_number(
-    api_key: generate_app_store_connect_api_key(),
-    app_identifier: BUNDLE_ID,
-    version: app_version
-  )
+  build_number = 1 # Set a default build number or use another method to determine it
 
   sh("echo BUILD_NUMBER=#{build_number} >> $GITHUB_ENV")
 
@@ -69,35 +42,16 @@ lane :master_build do |options|
   )
 end
 
-lane :tg_report_release do |options|
-  version = options[:version]
-  build = options[:build]
-  release_url = options[:release_url]
-
-  install_ipa_guide_url = "https://medium.com/@pancakeufo/how-to-install-nicegram-on-your-jailbroken-ios-device-1b8f9f2b5afa"
-
-  tg(
-    message: ""\
-    "Nicegram v#{version} (#{build}) -> [Download](#{release_url})\n\n"\
-    "How to install .ipa -> [Read here](#{install_ipa_guide_url})",
-    parse_mode: "Markdown"
-  )
-end
-
 lane :build do |options|
   build_number = options[:build_number]
-  upload_to_tf = options[:upload_to_tf]
 
   # Create temp keychain
-  ensure_temp_keychain(name: KEYCHAIN_NAME, password: KEYCHAIN_PASSWORD)
-  # Match because Telegram script doesnt import certificates
-  nicegram_match(
-    type: "appstore"
-  )
+  ensure_temp_keychain(name: ENV["KEYCHAIN_NAME"], password: ENV["KEYCHAIN_PASSWORD"])
+  
+  # Match certificates
+  nicegram_match(type: "appstore")
 
-  telegram_configuration_path = resolve_telegram_configuration(
-    is_appstore_build: upload_to_tf
-  )
+  telegram_configuration_path = resolve_telegram_configuration(is_appstore_build: false)
 
   update_remote_config_defaults()
 
@@ -109,35 +63,30 @@ lane :build do |options|
     git_codesigning_type: "appstore"
   )
 
-  # Upload to testflight
-  if upload_to_tf
-    upload_ipa(ipa: ipa_path)
-  end
-
-  delete_keychain_if_exists(name: KEYCHAIN_NAME)
+  # Delete temp keychain after build
+  delete_keychain_if_exists(name: ENV["KEYCHAIN_NAME"])
 end
 
 lane :resolve_telegram_configuration do |options|
-  is_appstore_build = options[:is_appstore_build] || true
+  is_appstore_build = options[:is_appstore_build] || false
 
   telegram_configuration_path = "#{BUILD_WORKING_DIR}/telegram-configuration.json"
-
   env_path = "#{SOURCE_PATH}/ng-env.txt"
   env = File.read(env_path)
   telegram_configuration_base64 = ""
+
   if env == "test"
-    telegram_configuration_base64 = TELEGRAM_CONFIGURATION_TEST
+    telegram_configuration_base64 = ENV["TELEGRAM_CONFIGURATION_TEST"]
   elsif env == "prod"
-    telegram_configuration_base64 = TELEGRAM_CONFIGURATION_PROD
+    telegram_configuration_base64 = ENV["TELEGRAM_CONFIGURATION_PROD"]
   else
     raise "Unknown environment in #{env_path}"
   end
 
   telegram_configuration_string = Base64.decode64(telegram_configuration_base64)
-  
   telegram_configuration = JSON.parse(telegram_configuration_string)
   telegram_configuration["is_appstore_build"] = is_appstore_build
-  
+
   File.write(telegram_configuration_path, JSON.pretty_generate(telegram_configuration))
 
   telegram_configuration_path
@@ -188,96 +137,6 @@ lane :build_bazel do |options|
   ipa_path = "#{artifacts_path}/Telegram.ipa"
 end
 
-lane :generate_project do |options|
-  match(
-    type: "development",
-    app_identifier: app_identifier_llc,
-    team_id: TEAM_ID,
-    git_url: SIGN_URL,
-    git_branch: TEAM_ID,
-    api_key: generate_app_store_connect_api_key()
-  )
-
-  configuration_path = resolve_telegram_configuration()
-
-  sh "cd #{SOURCE_PATH} && python3 build-system/Make/Make.py \
-  --cacheDir=#{BAZEL_LOCAL_CACHE} \
-  generateProject \
-  --configurationPath=#{configuration_path} \
-  --buildNumber=555 \
-  --gitCodesigningRepository=#{SIGN_URL} \
-  --gitCodesigningType=development"
-end
-
-
-lane :upload_ipa do |options|
-  ipa_path = options[:ipa]
-
-  upload_to_testflight(
-    api_key: generate_app_store_connect_api_key(),
-    ipa: ipa_path,
-    skip_waiting_for_build_processing: true,
-  )
-end
-
-lane :update_remote_config_defaults do |options|
-  credentials_file_path = "./GOOGLE_APPLICATION_CREDENTIALS"
-  File.write(
-    credentials_file_path, 
-    Base64.decode64(GOOGLE_APPLICATION_CREDENTIALS_BASE64)
-  )
-
-  scope = [
-    "https://www.googleapis.com/auth/firebase.remoteconfig"
-  ]
-
-  auth = Google::Auth::ServiceAccountCredentials.make_creds(
-    json_key_io: File.open(credentials_file_path),
-    scope: scope
-  )
-  token = auth.fetch_access_token!["access_token"]
-  
-  sh "curl https://firebaseremoteconfig.googleapis.com/v1/projects/nicegram-55d94/remoteConfig:downloadDefaults?format=PLIST \
-  --compressed \
-  -H \"Authorization: Bearer #{token}\" \
-  -o #{SOURCE_PATH}/Telegram/Telegram-iOS/FirebaseRemoteConfigDefaults.plist \
-  "
-
-  File.delete(credentials_file_path)
-end
-
-lane :nicegram_match do |options|
-  type = options[:type]
-
-  match(
-    type: type,
-    app_identifier: app_identifier_llc,
-    team_id: TEAM_ID,
-    git_url: SIGN_URL,
-    git_branch: TEAM_ID,
-    api_key: generate_app_store_connect_api_key(),
-    keychain_name: KEYCHAIN_NAME,
-    keychain_password: KEYCHAIN_PASSWORD,
-    skip_provisioning_profiles: true
-  )
-end
-
-lane :upload_dsyms do |options|
-  upload_symbols_to_crashlytics(
-    binary_path: "#{SOURCE_PATH}/ci/upload-symbols",
-    dsym_path: "#{BUILD_WORKING_DIR}/artifacts/Telegram.DSYMs.zip",
-    gsp_path: "#{SOURCE_PATH}/Telegram/Telegram-iOS/GoogleService-Info.plist"
-  )
-end
-
-lane :generate_app_store_connect_api_key do |options|
-  app_store_connect_api_key(
-    key_id: APP_STORE_CONNECT_API_KEY_ID,
-    issuer_id: APP_STORE_CONNECT_API_KEY_ISSUER_ID,
-    key_content: APP_STORE_CONNECT_API_PRIVATE_KEY_CONTENT
-  )
-end
-
 lane :ensure_temp_keychain do |options|
   name = options[:name]
   password = options[:password]
@@ -295,26 +154,4 @@ lane :delete_keychain_if_exists do |options|
   name = options[:name]
 
   delete_keychain(name: name) if File.exist?(File.expand_path("~/Library/Keychains/#{name}-db"))
-end
-
-lane :log do |options|
-  message = options[:message]
-  # tg(message: message)
-end
-
-lane :tg do |options|
-  message = options[:message]
-  parse_mode = options[:parse_mode]
-
-  sh("curl -X POST \
-     -H 'Content-Type: application/json' \
-     -d '{\"chat_id\": \"#{TELEGRAM_CHAT_ID}\", \"text\": \"#{message}\", \"parse_mode\": \"#{parse_mode}\"}' \
-     https://api.telegram.org/bot#{TELEGRAM_BOT_TOKEN}/sendMessage"
-   )
-end
-
-
-error do |_, exception|
-    delete_keychain_if_exists(name: KEYCHAIN_NAME)
-    log(message: "❌ Error building Nicegram\n#{exception}")
 end
