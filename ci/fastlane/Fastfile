@@ -12,20 +12,6 @@ BUILD_WORKING_DIR = ENV["BUILD_WORKING_DIR"]
 BUNDLE_ID = ENV["BUNDLE_ID"]
 SIGN_URL = ENV["SIGN_URL"]
 SOURCE_PATH = ENV["SOURCE_PATH"]
-TEAM_ID = ENV["TEAM_ID"]
-
-base_app_identifier_llc = BUNDLE_ID || "app.nicegram"
-app_identifier_llc = [
-  base_app_identifier_llc,
-  base_app_identifier_llc + ".Widget",
-  base_app_identifier_llc + ".NotificationContent",
-  base_app_identifier_llc + ".SiriIntents",
-  base_app_identifier_llc + ".Share",
-  base_app_identifier_llc + ".NotificationService",
-  base_app_identifier_llc + ".watchkitapp",
-  base_app_identifier_llc + ".watchkitapp.watchkitextension",
-  base_app_identifier_llc + ".BroadcastUpload"
-]
 
 lane :master_build do |options|
   # Load the app version from versions.json
@@ -33,24 +19,17 @@ lane :master_build do |options|
   app_version = versions["app"]
 
   build_number = 1 # Set a default build number or use another method to determine it
-
   sh("echo BUILD_NUMBER=#{build_number} >> $GITHUB_ENV")
 
   build(
-    build_number: build_number,
-    upload_to_tf: false
+    build_number: build_number
   )
 end
 
 lane :build do |options|
   build_number = options[:build_number]
 
-  # Create temp keychain
-  ensure_temp_keychain(name: ENV["KEYCHAIN_NAME"], password: ENV["KEYCHAIN_PASSWORD"])
-  
-  # Match certificates
-  nicegram_match(type: "appstore")
-
+  # Skip keychain management
   telegram_configuration_path = resolve_telegram_configuration(is_appstore_build: false)
 
   update_remote_config_defaults()
@@ -62,9 +41,6 @@ lane :build do |options|
     git_codesigning_repository: SIGN_URL,
     git_codesigning_type: "appstore"
   )
-
-  # Delete temp keychain after build
-  delete_keychain_if_exists(name: ENV["KEYCHAIN_NAME"])
 end
 
 lane :resolve_telegram_configuration do |options|
@@ -135,23 +111,4 @@ lane :build_bazel do |options|
   sh shell_command, error_callback: error_callback
 
   ipa_path = "#{artifacts_path}/Telegram.ipa"
-end
-
-lane :ensure_temp_keychain do |options|
-  name = options[:name]
-  password = options[:password]
-
-  delete_keychain_if_exists(name: name)
-  create_keychain(
-    name: name,
-    password: password,
-    unlock: true,
-    timeout: 0
-  )
-end
-
-lane :delete_keychain_if_exists do |options|
-  name = options[:name]
-
-  delete_keychain(name: name) if File.exist?(File.expand_path("~/Library/Keychains/#{name}-db"))
 end
