@@ -33,11 +33,11 @@ jobs:
       - name: Build the App
         run: |
           set -x
-          SOURCE_PATH=/Users/telegram/telegram-ios
-          BUILD_WORKING_DIR=/Users/telegram/build-working-dir
+          export SOURCE_PATH=/Users/telegram/telegram-ios
+          export BUILD_WORKING_DIR=/Users/telegram/build-working-dir
           mkdir -p $BUILD_WORKING_DIR
           cd $SOURCE_PATH/ci
-          fastlane master_build
+          bundle exec fastlane master_build
           cd $SOURCE_PATH
           ARTIFACTS_PATH=$BUILD_WORKING_DIR/artifacts
           echo "ARTIFACTS_PATH=$ARTIFACTS_PATH" >> $GITHUB_ENV
