@@ -1692,8 +1692,12 @@ public class ChatMessageBubbleItemNode: ChatMessageItemView, ChatMessagePreviewI
             }
             
             if (item.associatedData.isCopyProtectionEnabled || item.message.isCopyProtected()) {
-                // do nothing
-            }
+                            if mayHaveSeparateCommentsButton && hasCommentButton(item: item) {
+                                needsShareButton = true
+                            } else {
+                                needsShareButton = true
+                            }
+                        }
         }
         
         if isPreview {
