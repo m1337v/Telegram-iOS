@@ -215,9 +215,7 @@ public final class ChatMessageSelectionInputPanelNode: ChatInputPanelNode {
         if let _ = self.presentationInterfaceState?.renderedPeer?.peer as? TelegramSecretChat {
             return
         }
-        if let actions = self.actions, actions.isCopyProtected {
-            self.interfaceInteraction?.displayCopyProtectionTip(self.forwardButton, false)
-        } else if !self.forwardButton.isImplicitlyDisabled {
+        if !self.forwardButton.isImplicitlyDisabled {
             self.interfaceInteraction?.forwardSelectedMessages()
         }
     }
@@ -226,9 +224,7 @@ public final class ChatMessageSelectionInputPanelNode: ChatInputPanelNode {
         if let _ = self.presentationInterfaceState?.renderedPeer?.peer as? TelegramSecretChat {
             return
         }
-        if let actions = self.actions, actions.isCopyProtected {
-            self.interfaceInteraction?.displayCopyProtectionTip(self.shareButton, true)
-        } else if !self.shareButton.isImplicitlyDisabled {
+        if !self.shareButton.isImplicitlyDisabled {
             self.interfaceInteraction?.shareSelectedMessages()
         }
     }

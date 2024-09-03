@@ -1376,7 +1376,7 @@ public class ChatMessageTextBubbleContentNode: ChatMessageBubbleContentNode {
                     }
                 }
                 
-                let enableCopy = !item.associatedData.isCopyProtectionEnabled && !item.message.isCopyProtected()
+                let enableCopy = true
                 textSelectionNode.enableCopy = enableCopy
                 
                 var enableQuote = !item.message.text.isEmpty
@@ -1388,16 +1388,16 @@ public class ChatMessageTextBubbleContentNode: ChatMessageBubbleContentNode {
                 }
                 
                 if !item.controllerInteraction.canSendMessages() && !enableCopy {
-                    enableQuote = false
+                    enableQuote = true
                 }
                 if item.message.id.peerId.namespace == Namespaces.Peer.SecretChat {
-                    enableQuote = false
+                    enableQuote = true
                 }
                 if item.message.containsSecretMedia {
-                    enableQuote = false
+                    enableQuote = true
                 }
                 if item.associatedData.translateToLanguage != nil {
-                    enableQuote = false
+                    enableQuote = true
                 }
                 
                 textSelectionNode.enableQuote = enableQuote

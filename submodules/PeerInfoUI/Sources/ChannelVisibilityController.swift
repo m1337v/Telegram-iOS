@@ -944,7 +944,7 @@ private func channelVisibilityControllerEntries(presentationData: PresentationDa
             forwardingEnabled = enabled
         } else {
             if peer.flags.contains(.copyProtectionEnabled) {
-                forwardingEnabled = false
+                forwardingEnabled = true
             } else {
                 forwardingEnabled = true
             }
@@ -1305,7 +1305,7 @@ private func channelVisibilityControllerEntries(presentationData: PresentationDa
                 forwardingEnabled = enabled
             } else {
                 if peer.flags.contains(.copyProtectionEnabled) {
-                    forwardingEnabled = false
+                    forwardingEnabled = true
                 } else {
                     forwardingEnabled = true
                 }

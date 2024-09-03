@@ -230,7 +230,7 @@ public func galleryItemForEntry(
             mediaIndex: entry.mediaIndex,
             location: location,
             translateToLanguage: translateToLanguage,
-            peerIsCopyProtected: peerIsCopyProtected,
+            peerIsCopyProtected: false,
             isSecret: isSecret,
             displayInfoOnTop: displayInfoOnTop,
             performAction: performAction,
@@ -240,7 +240,8 @@ public func galleryItemForEntry(
     } else if let file = media as? TelegramMediaFile {
         if file.isVideo {
             let content: UniversalVideoContent
-            let captureProtected = message.isCopyProtected() || message.containsSecretMedia || message.minAutoremoveOrClearTimeout == viewOnceTimeout || message.paidContent != nil
+            let captureProtected = false || false || false || message.paidContent != nil
+            // let captureProtected = message.isCopyProtected() || message.containsSecretMedia || message.minAutoremoveOrClearTimeout == viewOnceTimeout || message.paidContent != nil
             if file.isAnimated {
                 content = NativeVideoContent(id: .message(message.stableId, file.fileId), userLocation: .peer(message.id.peerId), fileReference: .message(message: MessageReference(message), media: file), imageReference: mediaImage.flatMap({ ImageMediaReference.message(message: MessageReference(message), media: $0) }), loopVideo: true, enableSound: false, tempFilePath: tempFilePath, captureProtected: captureProtected, storeAfterDownload: generateStoreAfterDownload?(message, file))
             } else {
@@ -293,7 +294,7 @@ public func galleryItemForEntry(
                 isSecret: isSecret,
                 landscape: landscape,
                 timecode: timecode,
-                peerIsCopyProtected: peerIsCopyProtected,
+                peerIsCopyProtected: false,
                 playbackRate: playbackRate,
                 configuration: configuration,
                 playbackCompleted: playbackCompleted,
@@ -318,7 +319,7 @@ public func galleryItemForEntry(
                         message: message,
                         location: location,
                         translateToLanguage: translateToLanguage,
-                        peerIsCopyProtected: peerIsCopyProtected,
+                        peerIsCopyProtected: false,
                         isSecret: isSecret,
                         displayInfoOnTop: displayInfoOnTop,
                         performAction: performAction,
@@ -353,11 +354,11 @@ public func galleryItemForEntry(
         var content: UniversalVideoContent?
         switch websiteType(of: webpageContent.websiteName) {
         case .instagram where webpageContent.file != nil && webpageContent.image != nil && webpageContent.file!.isVideo:
-            content = NativeVideoContent(id: .message(message.stableId, webpageContent.file?.id ?? webpage.webpageId), userLocation: .peer(message.id.peerId), fileReference: .message(message: MessageReference(message), media: webpageContent.file!), imageReference: webpageContent.image.flatMap({ ImageMediaReference.message(message: MessageReference(message), media: $0) }), streamVideo: .conservative, enableSound: true, captureProtected: message.isCopyProtected() || message.containsSecretMedia, storeAfterDownload: nil)
+            content = NativeVideoContent(id: .message(message.stableId, webpageContent.file?.id ?? webpage.webpageId), userLocation: .peer(message.id.peerId), fileReference: .message(message: MessageReference(message), media: webpageContent.file!), imageReference: webpageContent.image.flatMap({ ImageMediaReference.message(message: MessageReference(message), media: $0) }), streamVideo: .conservative, enableSound: true, captureProtected: false || message.containsSecretMedia, storeAfterDownload: nil)
         default:
             if let embedUrl = webpageContent.embedUrl, let image = webpageContent.image {
                 if let file = webpageContent.file, file.isVideo {
-                    content = NativeVideoContent(id: .message(message.stableId, file.fileId), userLocation: .peer(message.id.peerId), fileReference: .message(message: MessageReference(message), media: file), imageReference: mediaImage.flatMap({ ImageMediaReference.message(message: MessageReference(message), media: $0) }), streamVideo: .conservative, loopVideo: loopVideos, tempFilePath: tempFilePath, captureProtected: message.isCopyProtected() || message.containsSecretMedia, storeAfterDownload: generateStoreAfterDownload?(message, file))
+                    content = NativeVideoContent(id: .message(message.stableId, file.fileId), userLocation: .peer(message.id.peerId), fileReference: .message(message: MessageReference(message), media: file), imageReference: mediaImage.flatMap({ ImageMediaReference.message(message: MessageReference(message), media: $0) }), streamVideo: .conservative, loopVideo: loopVideos, tempFilePath: tempFilePath, captureProtected: false || message.containsSecretMedia, storeAfterDownload: generateStoreAfterDownload?(message, file))
                 } else if URL(string: embedUrl)?.pathExtension == "mp4" {
                     content = SystemVideoContent(userLocation: .peer(message.id.peerId), url: embedUrl, imageReference: .webPage(webPage: WebpageReference(webpage), media: image), dimensions: webpageContent.embedSize?.cgSize ?? CGSize(width: 640.0, height: 640.0), duration: webpageContent.duration.flatMap(Double.init) ?? 0.0)
                 }
@@ -471,12 +472,7 @@ private enum GalleryMessageHistoryView {
     }
     
     var peerIsCopyProtected: Bool {
-        switch self {
-        case let .view(_, peerIsCopyProtected):
-            return peerIsCopyProtected
-        case .entries:
-            return false
-        }
+        return false
     }
 }
 
@@ -683,7 +679,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                     if let message, let peer = message.peers[message.id.peerId] as? TelegramGroup, let migrationPeerId = peer.migrationReference?.peerId {
                         return context.account.postbox.loadedPeerWithId(migrationPeerId)
                         |> map { peer -> (Message, Bool)? in
-                            return (message, peer.isCopyProtectionEnabled)
+                            return (message, false)
                         }
                     } else {
                         return .single(message.flatMap { ($0, false) })
@@ -704,7 +700,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                     }
                 }
             case let .standaloneMessage(m, _):
-                message = .single((m, m.isCopyProtected()))
+                message = .single((m, false))
             case let .custom(messages, messageId, _):
                 message = messages
                 |> take(1)
@@ -735,7 +731,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                         }
                         return context.account.postbox.aroundMessageHistoryViewForLocation(context.chatLocationInput(for: chatLocation, contextHolder: chatLocationContextHolder), anchor: .index(message.index), ignoreMessagesInTimestampRange: nil, ignoreMessageIds: Set(), count: 50, clipHoles: false, fixedCombinedReadStates: nil, topTaggedMessageIdNamespaces: [], tag: inputTag, appendMessagesFromTheSameGroup: false, namespaces: namespaces, orderStatistics: [.combinedLocation])
                         |> mapToSignal { (view, _, _) -> Signal<GalleryMessageHistoryView?, NoError> in
-                            let mapped = GalleryMessageHistoryView.view(view, peerIsCopyProtected)
+                            let mapped = GalleryMessageHistoryView.view(view, false)
                             return .single(mapped)
                         }
                     } else {
@@ -779,7 +775,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
             let f: () -> Void = {
                 if let strongSelf = self {
                     if let view = view {
-                        strongSelf.peerIsCopyProtected = view.peerIsCopyProtected
+                        strongSelf.peerIsCopyProtected = false
                         
                         let appConfiguration: AppConfiguration = preferencesView.values[PreferencesKeys.appConfiguration]?.get(AppConfiguration.self) ?? .defaultValue
                         let configuration = GalleryConfiguration.with(appConfiguration: appConfiguration)
@@ -832,7 +828,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                                 if entry.stableId == strongSelf.centralEntryStableId {
                                     isCentral = true
                                 }
-                                if let item = galleryItemForEntry(context: context, presentationData: strongSelf.presentationData, entry: entry, isCentral: isCentral, streamVideos: streamSingleVideo, fromPlayingVideo: isCentral && fromPlayingVideo, landscape: isCentral && landscape, timecode: isCentral ? timecode : nil, playbackRate: { return self?.playbackRate }, displayInfoOnTop: displayInfoOnTop, configuration: configuration, translateToLanguage: translateToLanguage, peerIsCopyProtected: view.peerIsCopyProtected, performAction: strongSelf.performAction, openActionOptions: strongSelf.openActionOptions, storeMediaPlaybackState: strongSelf.actionInteraction?.storeMediaPlaybackState ?? { _, _, _ in }, generateStoreAfterDownload: strongSelf.generateStoreAfterDownload, present: { [weak self] c, a in
+                                if let item = galleryItemForEntry(context: context, presentationData: strongSelf.presentationData, entry: entry, isCentral: isCentral, streamVideos: streamSingleVideo, fromPlayingVideo: isCentral && fromPlayingVideo, landscape: isCentral && landscape, timecode: isCentral ? timecode : nil, playbackRate: { return self?.playbackRate }, displayInfoOnTop: displayInfoOnTop, configuration: configuration, translateToLanguage: translateToLanguage, peerIsCopyProtected: false, performAction: strongSelf.performAction, openActionOptions: strongSelf.openActionOptions, storeMediaPlaybackState: strongSelf.actionInteraction?.storeMediaPlaybackState ?? { _, _, _ in }, generateStoreAfterDownload: strongSelf.generateStoreAfterDownload, present: { [weak self] c, a in
                                     if let strongSelf = self {
                                         strongSelf.presentInGlobalOverlay(c, with: a)
                                     }
@@ -1441,7 +1437,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
             if entry.stableId == self.centralEntryStableId {
                 isCentral = true
             }
-            if let item = galleryItemForEntry(context: self.context, presentationData: self.presentationData, entry: entry, streamVideos: self.streamVideos, fromPlayingVideo: isCentral && self.fromPlayingVideo, landscape: isCentral && self.landscape, timecode: isCentral ? self.timecode : nil, playbackRate: { [weak self] in return self?.playbackRate }, displayInfoOnTop: displayInfoOnTop, configuration: self.configuration, peerIsCopyProtected: self.peerIsCopyProtected, performAction: self.performAction, openActionOptions: self.openActionOptions, storeMediaPlaybackState: self.actionInteraction?.storeMediaPlaybackState ?? { _, _, _ in }, generateStoreAfterDownload: self.generateStoreAfterDownload, present: { [weak self] c, a in
+            if let item = galleryItemForEntry(context: self.context, presentationData: self.presentationData, entry: entry, streamVideos: self.streamVideos, fromPlayingVideo: isCentral && self.fromPlayingVideo, landscape: isCentral && self.landscape, timecode: isCentral ? self.timecode : nil, playbackRate: { [weak self] in return self?.playbackRate }, displayInfoOnTop: displayInfoOnTop, configuration: self.configuration, peerIsCopyProtected: false, performAction: self.performAction, openActionOptions: self.openActionOptions, storeMediaPlaybackState: self.actionInteraction?.storeMediaPlaybackState ?? { _, _, _ in }, generateStoreAfterDownload: self.generateStoreAfterDownload, present: { [weak self] c, a in
                 if let strongSelf = self {
                     strongSelf.presentInGlobalOverlay(c, with: a)
                 }
@@ -1492,7 +1488,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                             } else if index >= strongSelf.entries.count - 3 && strongSelf.hasRightEntries {
                                 reloadAroundIndex = strongSelf.entries.last?.entry.index
                             }
-                            let peerIsCopyProtected = strongSelf.peerIsCopyProtected
+                            let peerIsCopyProtected = false
                             if let reloadAroundIndex = reloadAroundIndex, let tag = strongSelf.tag {
                                 let namespaces: MessageIdNamespaces
                                 if Namespaces.Message.allScheduled.contains(message.id.namespace) {
@@ -1504,7 +1500,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
                                 }
                                 let signal = strongSelf.context.account.postbox.aroundMessageHistoryViewForLocation(strongSelf.context.chatLocationInput(for: chatLocation, contextHolder: chatLocationContextHolder), anchor: .index(reloadAroundIndex), ignoreMessagesInTimestampRange: nil, ignoreMessageIds: Set(), count: 50, clipHoles: false, fixedCombinedReadStates: nil, topTaggedMessageIdNamespaces: [], tag: tag, appendMessagesFromTheSameGroup: false, namespaces: namespaces, orderStatistics: [.combinedLocation])
                                 |> mapToSignal { (view, _, _) -> Signal<GalleryMessageHistoryView?, NoError> in
-                                    let mapped = GalleryMessageHistoryView.view(view, peerIsCopyProtected)
+                                    let mapped = GalleryMessageHistoryView.view(view, false)
                                     return .single(mapped)
                                 }
                                 |> take(1)

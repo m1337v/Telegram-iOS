@@ -5338,7 +5338,8 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                         var copyProtectionEnabled: Bool = false
                         var hasBirthdayToday = false
                         if let peer = peerView.peers[peerView.peerId] {
-                            copyProtectionEnabled = peer.isCopyProtectionEnabled
+                            // copyProtectionEnabled = peer.isCopyProtectionEnabled
+                            copyProtectionEnabled = false
                             if let cachedGroupData = peerView.cachedData as? CachedGroupData {
                                 if !cachedGroupData.botInfos.isEmpty {
                                     hasBots = true
@@ -5831,7 +5832,8 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                         var copyProtectionEnabled: Bool = false
                         var businessIntro: TelegramBusinessIntro?
                         if let peer = peerView.peers[peerView.peerId] {
-                            copyProtectionEnabled = peer.isCopyProtectionEnabled
+                            // copyProtectionEnabled = peer.isCopyProtectionEnabled
+                            copyProtectionEnabled = false
                             if let cachedData = peerView.cachedData as? CachedUserData {
                                 contactStatus = ChatContactStatus(canAddContact: !peerView.peerIsContact, canReportIrrelevantLocation: false, peerStatusSettings: cachedData.peerStatusSettings, invitedBy: nil, managingBot: managingBot)
                                 if case let .known(value) = cachedData.businessIntro {

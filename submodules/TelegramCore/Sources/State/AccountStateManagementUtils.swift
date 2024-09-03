@@ -3744,7 +3744,7 @@ func replayFinalState(
                         }
                         
                         if !message.flags.contains(.Incoming), message.forwardInfo == nil {
-                            if [Namespaces.Peer.CloudGroup, Namespaces.Peer.CloudChannel].contains(message.id.peerId.namespace), let peer = transaction.getPeer(message.id.peerId), peer.isCopyProtectionEnabled {
+                            if [Namespaces.Peer.CloudGroup, Namespaces.Peer.CloudChannel].contains(message.id.peerId.namespace), let peer = transaction.getPeer(message.id.peerId) {
                                 
                             } else {
                                 inner: for media in message.media {

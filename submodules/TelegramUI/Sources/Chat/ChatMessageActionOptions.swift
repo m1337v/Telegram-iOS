@@ -404,7 +404,7 @@ private func generateChatReplyOptionItems(selfController: ChatControllerImpl, ch
         
         if let message = messages.first {
             if selfController.presentationInterfaceState.copyProtectionEnabled {
-                canReplyInAnotherChat = false
+                canReplyInAnotherChat = true
             }
             
             var isAction = false
@@ -419,16 +419,16 @@ private func generateChatReplyOptionItems(selfController: ChatControllerImpl, ch
             }
             
             if isAction {
-                canReplyInAnotherChat = false
+                canReplyInAnotherChat = true
             }
             if message.isCopyProtected() {
-                canReplyInAnotherChat = false
+                canReplyInAnotherChat = true
             }
             if message.id.peerId.namespace == Namespaces.Peer.SecretChat {
-                canReplyInAnotherChat = false
+                canReplyInAnotherChat = true
             }
             if message.minAutoremoveOrClearTimeout == viewOnceTimeout {
-                canReplyInAnotherChat = false
+                canReplyInAnotherChat = true
             }
         }
         
