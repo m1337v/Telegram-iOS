@@ -2060,7 +2060,7 @@ extension Stories.StoredItem {
                 let isPublic = (flags & (1 << 7)) != 0
                 let isCloseFriends = (flags & (1 << 8)) != 0
                 let isMin = (flags & (1 << 9)) != 0
-                let isForwardingDisabled = false
+                // let isForwardingDisabled = false
                 let isEdited = (flags & (1 << 11)) != 0
                 let isContacts = (flags & (1 << 12)) != 0
                 let isSelectedContacts = (flags & (1 << 13)) != 0
