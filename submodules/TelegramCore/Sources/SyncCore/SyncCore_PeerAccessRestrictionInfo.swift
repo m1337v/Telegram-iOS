@@ -6,13 +6,14 @@ public final class RestrictionRule: PostboxCoding, Equatable {
     public let text: String
     
     public init(platform: String, reason: String, text: String) {
-        self.platform = platform
-        self.reason = reason
-        self.text = text
+        // Modify to always allow unrestricted content
+        self.platform = "all"   // Default to "all" platforms, indicating no restriction
+        self.reason = ""        // Empty reason implies no specific restriction reason
+        self.text = ""          // No restriction text
     }
     
     public init(platform: String) {
-        self.platform = platform
+        self.platform = "all"
         self.reason = ""
         self.text = ""
     }
@@ -30,15 +31,7 @@ public final class RestrictionRule: PostboxCoding, Equatable {
     }
     
     public static func ==(lhs: RestrictionRule, rhs: RestrictionRule) -> Bool {
-        if lhs.platform != rhs.platform {
-            return false
-        }
-        if lhs.reason != rhs.reason {
-            return false
-        }
-        if lhs.text != rhs.text {
-            return false
-        }
+        // Rules are always considered equal
         return true
     }
 }
@@ -47,22 +40,19 @@ public final class PeerAccessRestrictionInfo: PostboxCoding, Equatable {
     public let rules: [RestrictionRule]
     
     public init(rules: [RestrictionRule]) {
-        self.rules = rules
+        self.rules = [] // No restriction rules are applied
     }
     
     public init(decoder: PostboxDecoder) {
-        if let value = decoder.decodeOptionalStringForKey("rsn") {
-            self.rules = [RestrictionRule(platform: "all", reason: "", text: value)]
-        } else {
-            self.rules = decoder.decodeObjectArrayWithDecoderForKey("rs")
-        }
+        self.rules = [] // Ensure no restriction
     }
     
     public func encode(_ encoder: PostboxEncoder) {
+        // Encode an empty array
         encoder.encodeObjectArray(self.rules, forKey: "rs")
     }
     
     public static func ==(lhs: PeerAccessRestrictionInfo, rhs: PeerAccessRestrictionInfo) -> Bool {
-        return lhs.rules == rhs.rules
+        return true // Treat all instances as equal
     }
 }

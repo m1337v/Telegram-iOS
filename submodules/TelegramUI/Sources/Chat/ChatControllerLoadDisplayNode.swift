@@ -4042,75 +4042,7 @@ extension ChatControllerImpl {
             })
         }, presentChatRequestAdminInfo: { [weak self] in
             self?.presentChatRequestAdminInfo()
-        }, displayCopyProtectionTip: { [weak self] node, save in
-            if let strongSelf = self, let peer = strongSelf.presentationInterfaceState.renderedPeer?.peer, let messageIds = strongSelf.presentationInterfaceState.interfaceState.selectionState?.selectedIds {
-                let _ = (strongSelf.context.engine.data.get(EngineDataMap(
-                    messageIds.map(TelegramEngine.EngineData.Item.Messages.Message.init)
-                ))
-                |> map { messages -> [EngineMessage] in
-                    return messages.values.compactMap { $0 }
-                }
-                |> deliverOnMainQueue).startStandalone(next: { [weak self] messages in
-                    guard let strongSelf = self else {
-                        return
-                    }
-                    enum PeerType {
-                        case group
-                        case channel
-                        case bot
-                        case user
-                    }
-                    var isBot = false
-                    for message in messages {
-                        if let author = message.author, case let .user(user) = author, user.botInfo != nil {
-                            isBot = true
-                            break
-                        }
-                    }
-                    let type: PeerType
-                    if isBot {
-                        type = .bot
-                    } else if let user = peer as? TelegramUser {
-                        if user.botInfo != nil {
-                            type = .bot
-                        } else {
-                            type = .user
-                        }
-                    } else if let channel = peer as? TelegramChannel, case .broadcast = channel.info {
-                        type = .channel
-                    }  else {
-                        type = .group
-                    }
-                    
-                    let text: String
-                    switch type {
-                    case .group:
-                        text = save ? strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionSavingDisabledGroup : strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionForwardingDisabledGroup
-                    case .channel:
-                        text = save ? strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionSavingDisabledChannel : strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionForwardingDisabledChannel
-                    case .bot:
-                        text = save ? strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionSavingDisabledBot : strongSelf.presentationInterfaceState.strings.Conversation_CopyProtectionForwardingDisabledBot
-                    case .user:
-                        text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledSecret : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledSecret
-                    }
-                    
-                    strongSelf.copyProtectionTooltipController?.dismiss()
-                    let tooltipController = TooltipController(content: .text(text), baseFontSize: strongSelf.presentationData.listsFontSize.baseDisplaySize, dismissByTapOutside: true, dismissImmediatelyOnLayoutUpdate: true)
-                    strongSelf.copyProtectionTooltipController = tooltipController
-                    tooltipController.dismissed = { [weak tooltipController] _ in
-                        if let strongSelf = self, let tooltipController = tooltipController, strongSelf.copyProtectionTooltipController === tooltipController {
-                            strongSelf.copyProtectionTooltipController = nil
-                        }
-                    }
-                    strongSelf.present(tooltipController, in: .window(.root), with: TooltipControllerPresentationArguments(sourceNodeAndRect: {
-                        if let strongSelf = self {
-                            let rect = node.view.convert(node.view.bounds, to: strongSelf.chatDisplayNode.view).offsetBy(dx: 0.0, dy: 3.0)
-                            return (strongSelf.chatDisplayNode, rect)
-                        }
-                        return nil
-                    }))
-                })
-           }
+        }, displayCopyProtectionTip: { _, _ in // no copy protection
         }, openWebView: { [weak self] buttonText, url, simple, source in
             if let strongSelf = self {
                 strongSelf.controllerInteraction?.openWebView(buttonText, url, simple, source)

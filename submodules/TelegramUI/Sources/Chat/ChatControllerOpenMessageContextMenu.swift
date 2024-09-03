@@ -88,14 +88,7 @@ extension ChatControllerImpl {
                         }
                     }
                     if self.presentationInterfaceState.copyProtectionEnabled && !isAction && !isAd {
-                        if case .scheduledMessages = self.subject {
-                        } else {
-                            var isChannel = false
-                            if let channel = self.presentationInterfaceState.renderedPeer?.peer as? TelegramChannel, case .broadcast = channel.info {
-                                isChannel = true
-                            }
-                            tip = .messageCopyProtection(isChannel: isChannel)
-                        }
+                        // do nothing
                     } else {
                         let numberOfComponents = message.text.components(separatedBy: CharacterSet.whitespacesAndNewlines).count
                         let displayTextSelectionTip = numberOfComponents >= 3 && !message.text.isEmpty && chatTextSelectionTips < 3 && !isAd

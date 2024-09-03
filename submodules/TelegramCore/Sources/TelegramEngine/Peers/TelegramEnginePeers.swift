@@ -463,7 +463,7 @@ public extension TelegramEngine {
         }
 
         public func toggleMessageCopyProtection(peerId: PeerId, enabled: Bool) -> Signal<Void, NoError> {
-            return _internal_toggleMessageCopyProtection(account: self.account, peerId: peerId, enabled: enabled)
+            return .complete()
         }
         
         public func toggleChannelJoinToSend(peerId: PeerId, enabled: Bool) -> Signal<Never, UpdateChannelJoinToSendError> {

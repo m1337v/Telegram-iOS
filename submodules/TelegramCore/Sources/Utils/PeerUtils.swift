@@ -18,31 +18,7 @@ public extension Peer {
     }
     
     func restrictionText(platform: String, contentSettings: ContentSettings) -> String? {
-        var restrictionInfo: PeerAccessRestrictionInfo?
-        switch self {
-        case let user as TelegramUser:
-            restrictionInfo = user.restrictionInfo
-        case let channel as TelegramChannel:
-            restrictionInfo = channel.restrictionInfo
-        default:
-            break
-        }
-        
-        if let restrictionInfo = restrictionInfo {
-            for rule in restrictionInfo.rules {
-                if rule.reason == "sensitive" {
-                    continue
-                }
-                if rule.platform == "all" || rule.platform == platform || contentSettings.addContentRestrictionReasons.contains(rule.platform) {
-                    if !contentSettings.ignoreContentRestrictionReasons.contains(rule.reason) {
-                        return rule.text
-                    }
-                }
-            }
-            return nil
-        } else {
-            return nil
-        }
+        return nil // no restrictions
     }
         
     var addressName: String? {
@@ -213,33 +189,11 @@ public extension Peer {
     }
     
     var isCopyProtectionEnabled: Bool {
-        switch self {
-        case let group as TelegramGroup:
-            return group.flags.contains(.copyProtectionEnabled)
-        case let channel as TelegramChannel:
-            return channel.flags.contains(.copyProtectionEnabled)
-        default:
-            return false
-        }
+        return false // no copy protection
     }
     
     func hasSensitiveContent(platform: String) -> Bool {
-        var restrictionInfo: PeerAccessRestrictionInfo?
-        switch self {
-        case let user as TelegramUser:
-            restrictionInfo = user.restrictionInfo
-        case let channel as TelegramChannel:
-            restrictionInfo = channel.restrictionInfo
-        default:
-            break
-        }
-        
-        if let restrictionInfo, let rule = restrictionInfo.rules.first(where: { $0.reason == "sensitive" }) {
-            if rule.platform == "all" || rule.platform == platform {
-                return true
-            }
-        }
-        return false
+        return false // no sensitive content
     }
     
     var isForum: Bool {

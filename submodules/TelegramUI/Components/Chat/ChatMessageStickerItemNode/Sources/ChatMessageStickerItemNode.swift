@@ -551,12 +551,7 @@ public class ChatMessageStickerItemNode: ChatMessageItemView {
                     }
                 }
                 
-                if item.associatedData.isCopyProtectionEnabled || item.message.isCopyProtected() {
-                    if hasCommentButton(item: item) {
-                    } else {
-                        needsShareButton = false
-                    }
-                }
+                needsShareButton = true // Always enable
             }
             
             if let subject = item.associatedData.subject, case .messageOptions = subject {
