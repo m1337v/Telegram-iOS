@@ -919,7 +919,7 @@ final class StoryItemSetContainerSendMessage {
     }
     
     func lockMediaRecording() {
-        self.isMediaRecordingLocked = true
+        self.isMediaRecordingLocked = false
     }
     
     func stopMediaRecording(view: StoryItemSetContainerComponent.View) {
@@ -978,7 +978,7 @@ final class StoryItemSetContainerSendMessage {
             return
         }
         
-        if focusedItem.storyItem.isForwardingDisabled {
+        if false {
             let presentationData = component.context.sharedContext.currentPresentationData.with({ $0 }).withUpdated(theme: component.theme)
             let actionSheet = ActionSheetController(presentationData: presentationData)
             

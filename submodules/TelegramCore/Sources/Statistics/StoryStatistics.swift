@@ -345,7 +345,7 @@ private final class StoryStatsPublicForwardsContextImpl {
                                             isCloseFriends: item.isCloseFriends,
                                             isContacts: item.isContacts,
                                             isSelectedContacts: item.isSelectedContacts,
-                                            isForwardingDisabled: item.isForwardingDisabled,
+                                            isForwardingDisabled: false,
                                             isEdited: item.isEdited,
                                             isMy: item.isMy,
                                             myReaction: item.myReaction,

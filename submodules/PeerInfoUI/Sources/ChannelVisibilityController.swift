@@ -401,7 +401,7 @@ private enum ChannelVisibilityEntry: ItemListNodeEntry {
                 }
             case let .forwardingDisabled(lhsTheme, lhsText, lhsValue):
                 if case let .forwardingDisabled(rhsTheme, rhsText, rhsValue) = rhs, lhsTheme === rhsTheme, lhsText == rhsText, lhsValue == rhsValue {
-                    return true
+                    return false
                 } else {
                     return false
                 }

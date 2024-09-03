@@ -33,7 +33,7 @@ public struct MediaEditorResultPrivacy: Codable, Equatable {
         self.sendAsPeerId = sendAsPeerId
         self.privacy = privacy
         self.timeout = timeout
-        self.isForwardingDisabled = isForwardingDisabled
+        self.isForwardingDisabled = false
         self.pin = pin
     }
     
@@ -43,7 +43,7 @@ public struct MediaEditorResultPrivacy: Codable, Equatable {
         self.sendAsPeerId = try container.decodeIfPresent(Int64.self, forKey: .sendAsPeerId).flatMap { EnginePeer.Id($0) }
         self.privacy = try container.decode(EngineStoryPrivacy.self, forKey: .privacy)
         self.timeout = Int(try container.decode(Int32.self, forKey: .timeout))
-        self.isForwardingDisabled = try container.decodeIfPresent(Bool.self, forKey: .disableForwarding) ?? false
+        self.isForwardingDisabled = false
         self.pin = try container.decode(Bool.self, forKey: .archive)
     }
     
@@ -53,7 +53,7 @@ public struct MediaEditorResultPrivacy: Codable, Equatable {
         try container.encodeIfPresent(self.sendAsPeerId?.toInt64(), forKey: .sendAsPeerId)
         try container.encode(self.privacy, forKey: .privacy)
         try container.encode(Int32(self.timeout), forKey: .timeout)
-        try container.encode(self.isForwardingDisabled, forKey: .disableForwarding)
+        try container.encode(false, forKey: .disableForwarding)
         try container.encode(self.pin, forKey: .archive)
     }
 }

@@ -1150,9 +1150,9 @@ private final class SparseItemGridBindingImpl: SparseItemGridBinding {
     }
 
     func createLayer(item: SparseItemGrid.Item) -> SparseItemGridLayer? {
-        if let item = item as? VisualMediaItem, item.story.isForwardingDisabled {
+        if let item = item as? VisualMediaItem {
             let layer = ItemLayer()
-            setLayerDisableScreenshots(layer, true)
+            setLayerDisableScreenshots(layer, false)
             return layer
         } else {
             return ItemLayer()
@@ -2182,10 +2182,8 @@ public final class PeerInfoStoryPaneNode: ASDisplayNode, PeerInfoPaneNode, ASScr
             }
             
             if !strongSelf.canManageStories {
-                if !storyItem.story.isForwardingDisabled, case .everyone = storyItem.story.privacy?.base {
-                } else {
-                    return false
-                }
+                storyItem.story.isForwardingDisabled = false
+                return true
             }
 
             strongSelf.currentGestureItem = item

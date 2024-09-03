@@ -105,7 +105,7 @@ public final class EngineStoryItem: Equatable {
         self.isCloseFriends = isCloseFriends
         self.isContacts = isContacts
         self.isSelectedContacts = isSelectedContacts
-        self.isForwardingDisabled = isForwardingDisabled
+        self.isForwardingDisabled = false
         self.isEdited = isEdited
         self.isMy = isMy
         self.myReaction = myReaction
@@ -166,7 +166,7 @@ public final class EngineStoryItem: Equatable {
             return false
         }
         if lhs.isForwardingDisabled != rhs.isForwardingDisabled {
-            return false
+            return true
         }
         if lhs.isEdited != rhs.isEdited {
             return false
@@ -231,7 +231,7 @@ public extension EngineStoryItem {
             isCloseFriends: self.isCloseFriends,
             isContacts: self.isContacts,
             isSelectedContacts: self.isSelectedContacts,
-            isForwardingDisabled: self.isForwardingDisabled,
+            isForwardingDisabled: false,
             isEdited: self.isEdited,
             isMy: self.isMy,
             
@@ -694,7 +694,7 @@ public final class PeerStoryListContext: StoryListContext {
                             isCloseFriends: item.isCloseFriends,
                             isContacts: item.isContacts,
                             isSelectedContacts: item.isSelectedContacts,
-                            isForwardingDisabled: item.isForwardingDisabled,
+                            isForwardingDisabled: false,
                             isEdited: item.isEdited,
                             isMy: item.isMy,
                             myReaction: item.myReaction,
@@ -863,7 +863,7 @@ public final class PeerStoryListContext: StoryListContext {
                                             isCloseFriends: item.isCloseFriends,
                                             isContacts: item.isContacts,
                                             isSelectedContacts: item.isSelectedContacts,
-                                            isForwardingDisabled: item.isForwardingDisabled,
+                                            isForwardingDisabled: false,
                                             isEdited: item.isEdited,
                                             isMy: item.isMy,
                                             myReaction: item.myReaction,
@@ -1037,7 +1037,7 @@ public final class PeerStoryListContext: StoryListContext {
                                                                 isCloseFriends: item.isCloseFriends,
                                                                 isContacts: item.isContacts,
                                                                 isSelectedContacts: item.isSelectedContacts,
-                                                                isForwardingDisabled: item.isForwardingDisabled,
+                                                                isForwardingDisabled: false,
                                                                 isEdited: item.isEdited,
                                                                 isMy: item.isMy,
                                                                 myReaction: item.myReaction,
@@ -1086,7 +1086,7 @@ public final class PeerStoryListContext: StoryListContext {
                                                             isCloseFriends: item.isCloseFriends,
                                                             isContacts: item.isContacts,
                                                             isSelectedContacts: item.isSelectedContacts,
-                                                            isForwardingDisabled: item.isForwardingDisabled,
+                                                            isForwardingDisabled: false,
                                                             isEdited: item.isEdited,
                                                             isMy: item.isMy,
                                                             myReaction: item.myReaction,
@@ -1137,7 +1137,7 @@ public final class PeerStoryListContext: StoryListContext {
                                                                 isCloseFriends: item.isCloseFriends,
                                                                 isContacts: item.isContacts,
                                                                 isSelectedContacts: item.isSelectedContacts,
-                                                                isForwardingDisabled: item.isForwardingDisabled,
+                                                                isForwardingDisabled: false,
                                                                 isEdited: item.isEdited,
                                                                 isMy: item.isMy,
                                                                 myReaction: item.myReaction,
@@ -1194,7 +1194,7 @@ public final class PeerStoryListContext: StoryListContext {
                                                             isCloseFriends: item.isCloseFriends,
                                                             isContacts: item.isContacts,
                                                             isSelectedContacts: item.isSelectedContacts,
-                                                            isForwardingDisabled: item.isForwardingDisabled,
+                                                            isForwardingDisabled: false,
                                                             isEdited: item.isEdited,
                                                             isMy: item.isMy,
                                                             myReaction: item.myReaction,
@@ -1440,7 +1440,7 @@ public final class SearchStoryListContext: StoryListContext {
                                             isCloseFriends: item.isCloseFriends,
                                             isContacts: item.isContacts,
                                             isSelectedContacts: item.isSelectedContacts,
-                                            isForwardingDisabled: item.isForwardingDisabled,
+                                            isForwardingDisabled: false,
                                             isEdited: item.isEdited,
                                             isMy: item.isMy,
                                             myReaction: item.myReaction,
@@ -1589,7 +1589,7 @@ public final class SearchStoryListContext: StoryListContext {
                                                     isCloseFriends: item.isCloseFriends,
                                                     isContacts: item.isContacts,
                                                     isSelectedContacts: item.isSelectedContacts,
-                                                    isForwardingDisabled: item.isForwardingDisabled,
+                                                    isForwardingDisabled: false,
                                                     isEdited: item.isEdited,
                                                     isMy: item.isMy,
                                                     myReaction: item.myReaction,
@@ -1650,7 +1650,7 @@ public final class SearchStoryListContext: StoryListContext {
                                                 isCloseFriends: item.storyItem.isCloseFriends,
                                                 isContacts: item.storyItem.isContacts,
                                                 isSelectedContacts: item.storyItem.isSelectedContacts,
-                                                isForwardingDisabled: item.storyItem.isForwardingDisabled,
+                                                isForwardingDisabled: false,
                                                 isEdited: item.storyItem.isEdited,
                                                 isMy: item.storyItem.isMy,
                                                 myReaction: reaction,
@@ -1779,7 +1779,7 @@ public final class PeerExpiringStoryListContext {
                                         isCloseFriends: item.isCloseFriends,
                                         isContacts: item.isContacts,
                                         isSelectedContacts: item.isSelectedContacts,
-                                        isForwardingDisabled: item.isForwardingDisabled,
+                                        isForwardingDisabled: false,
                                         isEdited: item.isEdited,
                                         isMy: item.isMy,
                                         myReaction: item.myReaction,

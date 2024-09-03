@@ -209,7 +209,7 @@ public class ChatMessageStoryMentionContentNode: ChatMessageBubbleContentNode {
                             let imageFrame = CGRect(origin: CGPoint(x: floorToScreenPixels((backgroundSize.width - imageSize.width) / 2.0), y: 15.0), size: imageSize).insetBy(dx: 6.0, dy: 6.0)
                             if let story, let selectedMedia {
                                 if mediaUpdated {
-                                    if story.isForwardingDisabled {
+                                    if false {
                                         let maxImageSize = CGSize(width: 180.0, height: 180.0).aspectFitted(imageSize)
                                         let boundingImageSize = maxImageSize
                                         

@@ -702,7 +702,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
                     entities: generateChatInputTextEntities(result.caption),
                     pin: result.options.pin,
                     privacy: result.options.privacy,
-                    isForwardingDisabled: result.options.isForwardingDisabled,
+                    isForwardingDisabled: false,
                     period: result.options.timeout,
                     randomId: result.randomId,
                     forwardInfo: forwardInfo

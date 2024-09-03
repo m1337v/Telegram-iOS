@@ -327,7 +327,7 @@ public enum Stories {
             self.isCloseFriends = isCloseFriends
             self.isContacts = isContacts
             self.isSelectedContacts = isSelectedContacts
-            self.isForwardingDisabled = isForwardingDisabled
+            self.isForwardingDisabled = false
             self.isEdited = isEdited
             self.isMy = isMy
             self.myReaction = myReaction
@@ -366,7 +366,7 @@ public enum Stories {
             self.isCloseFriends = try container.decodeIfPresent(Bool.self, forKey: .isCloseFriends) ?? false
             self.isContacts = try container.decodeIfPresent(Bool.self, forKey: .isContacts) ?? false
             self.isSelectedContacts = try container.decodeIfPresent(Bool.self, forKey: .isSelectedContacts) ?? false
-            self.isForwardingDisabled = try container.decodeIfPresent(Bool.self, forKey: .isForwardingDisabled) ?? false
+            self.isForwardingDisabled = false
             self.isEdited = try container.decodeIfPresent(Bool.self, forKey: .isEdited) ?? false
             self.isMy = try container.decodeIfPresent(Bool.self, forKey: .isMy) ?? false
             self.myReaction = try container.decodeIfPresent(MessageReaction.Reaction.self, forKey: .myReaction)
@@ -407,7 +407,7 @@ public enum Stories {
             try container.encode(self.isCloseFriends, forKey: .isCloseFriends)
             try container.encode(self.isContacts, forKey: .isContacts)
             try container.encode(self.isSelectedContacts, forKey: .isSelectedContacts)
-            try container.encode(self.isForwardingDisabled, forKey: .isForwardingDisabled)
+            try container.encode(false, forKey: .isForwardingDisabled)
             try container.encode(self.isEdited, forKey: .isEdited)
             try container.encode(self.isMy, forKey: .isMy)
             try container.encodeIfPresent(self.myReaction, forKey: .myReaction)
@@ -480,7 +480,7 @@ public enum Stories {
                 return false
             }
             if lhs.isForwardingDisabled != rhs.isForwardingDisabled {
-                return false
+                return true
             }
             if lhs.isEdited != rhs.isEdited {
                 return false
@@ -997,7 +997,7 @@ func _internal_uploadStory(account: Account, target: Stories.PendingTarget, medi
             embeddedStickers: media.embeddedStickers,
             pin: pin,
             privacy: privacy,
-            isForwardingDisabled: isForwardingDisabled,
+            isForwardingDisabled: false,
             period: Int32(period),
             randomId: randomId,
             forwardInfo: forwardInfo
@@ -1144,9 +1144,9 @@ func _internal_uploadStoryImpl(
                         
                         flags |= 1 << 3
                         
-                        if isForwardingDisabled {
-                            flags |= 1 << 4
-                        }
+                        // if isForwardingDisabled {
+                        //     flags |= 1 << 4
+                        // }
                         
                         let inputMediaAreas: [Api.MediaArea] = apiMediaAreasFromMediaAreas(mediaAreas, transaction: transaction)
                         if !inputMediaAreas.isEmpty {
@@ -1221,7 +1221,7 @@ func _internal_uploadStoryImpl(
                                                             isCloseFriends: item.isCloseFriends,
                                                             isContacts: item.isContacts,
                                                             isSelectedContacts: item.isSelectedContacts,
-                                                            isForwardingDisabled: item.isForwardingDisabled,
+                                                            isForwardingDisabled: false,
                                                             isEdited: item.isEdited,
                                                             isMy: item.isMy,
                                                             myReaction: item.myReaction,
@@ -1629,7 +1629,7 @@ func _internal_editStoryPrivacy(account: Account, id: Int32, privacy: EngineStor
                 isCloseFriends: item.isCloseFriends,
                 isContacts: item.isContacts,
                 isSelectedContacts: item.isSelectedContacts,
-                isForwardingDisabled: item.isForwardingDisabled,
+                isForwardingDisabled: false,
                 isEdited: item.isEdited,
                 isMy: item.isMy,
                 myReaction: item.myReaction,
@@ -1661,7 +1661,7 @@ func _internal_editStoryPrivacy(account: Account, id: Int32, privacy: EngineStor
                 isCloseFriends: item.isCloseFriends,
                 isContacts: item.isContacts,
                 isSelectedContacts: item.isSelectedContacts,
-                isForwardingDisabled: item.isForwardingDisabled,
+                isForwardingDisabled: false,
                 isEdited: item.isEdited,
                 isMy: item.isMy,
                 myReaction: item.myReaction,
@@ -1858,7 +1858,7 @@ func _internal_updateStoriesArePinned(account: Account, peerId: PeerId, ids: [In
                     isCloseFriends: item.isCloseFriends,
                     isContacts: item.isContacts,
                     isSelectedContacts: item.isSelectedContacts,
-                    isForwardingDisabled: item.isForwardingDisabled,
+                    isForwardingDisabled: false,
                     isEdited: item.isEdited,
                     isMy: item.isMy,
                     myReaction: item.myReaction,
@@ -1889,7 +1889,7 @@ func _internal_updateStoriesArePinned(account: Account, peerId: PeerId, ids: [In
                     isCloseFriends: item.isCloseFriends,
                     isContacts: item.isContacts,
                     isSelectedContacts: item.isSelectedContacts,
-                    isForwardingDisabled: item.isForwardingDisabled,
+                    isForwardingDisabled: false,
                     isEdited: item.isEdited,
                     isMy: item.isMy,
                     myReaction: item.myReaction,
@@ -2060,7 +2060,7 @@ extension Stories.StoredItem {
                 let isPublic = (flags & (1 << 7)) != 0
                 let isCloseFriends = (flags & (1 << 8)) != 0
                 let isMin = (flags & (1 << 9)) != 0
-                let isForwardingDisabled = (flags & (1 << 10)) != 0
+                let isForwardingDisabled = false
                 let isEdited = (flags & (1 << 11)) != 0
                 let isContacts = (flags & (1 << 12)) != 0
                 let isSelectedContacts = (flags & (1 << 13)) != 0
@@ -2120,7 +2120,7 @@ extension Stories.StoredItem {
                     isCloseFriends: isCloseFriends,
                     isContacts: isContacts,
                     isSelectedContacts: isSelectedContacts,
-                    isForwardingDisabled: isForwardingDisabled,
+                    isForwardingDisabled: false,
                     isEdited: isEdited,
                     isMy: mergedIsMy,
                     myReaction: mergedMyReaction,
@@ -2197,7 +2197,7 @@ func _internal_getStoryById(accountPeerId: PeerId, postbox: Postbox, network: Ne
                                 isCloseFriends: item.isCloseFriends,
                                 isContacts: item.isContacts,
                                 isSelectedContacts: item.isSelectedContacts,
-                                isForwardingDisabled: item.isForwardingDisabled,
+                                isForwardingDisabled: false,
                                 isEdited: item.isEdited,
                                 isMy: item.isMy,
                                 myReaction: item.myReaction,
@@ -2668,7 +2668,7 @@ func _internal_setStoryReaction(account: Account, peerId: EnginePeer.Id, id: Int
                         isCloseFriends: item.isCloseFriends,
                         isContacts: item.isContacts,
                         isSelectedContacts: item.isSelectedContacts,
-                        isForwardingDisabled: item.isForwardingDisabled,
+                        isForwardingDisabled: false,
                         isEdited: item.isEdited,
                         isMy: item.isMy,
                         myReaction: reaction,
@@ -2702,7 +2702,7 @@ func _internal_setStoryReaction(account: Account, peerId: EnginePeer.Id, id: Int
                 isCloseFriends: item.isCloseFriends,
                 isContacts: item.isContacts,
                 isSelectedContacts: item.isSelectedContacts,
-                isForwardingDisabled: item.isForwardingDisabled,
+                isForwardingDisabled: false,
                 isEdited: item.isEdited,
                 isMy: item.isMy,
                 myReaction: reaction,
