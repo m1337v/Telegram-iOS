@@ -591,7 +591,7 @@ public final class ChatPresentationInterfaceState: Equatable {
         self.botMenuButton = .commands
         self.showWebView = false
         self.currentSendAsPeerId = nil
-        false = false
+        self.copyProtectionEnabled = false
         self.hasPlentyOfMessages = false
         self.isPremium = false
         self.premiumGiftOptions = []
@@ -675,7 +675,7 @@ public final class ChatPresentationInterfaceState: Equatable {
         self.botMenuButton = botMenuButton
         self.showWebView = showWebView
         self.currentSendAsPeerId = currentSendAsPeerId
-        false = false
+        self.copyProtectionEnabled = false
         self.hasPlentyOfMessages = hasPlentyOfMessages
         self.isPremium = isPremium
         self.premiumGiftOptions = premiumGiftOptions
