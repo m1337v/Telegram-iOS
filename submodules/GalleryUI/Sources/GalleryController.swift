@@ -711,7 +711,7 @@ public class GalleryController: ViewController, StandalonePresentableController,
         let messageView = message
         |> filter({ $0 != nil })
         |> mapToSignal { messageAndPeerIsCopyProtected -> Signal<GalleryMessageHistoryView?, NoError> in
-            let (message, peerIsCopyProtected) = messageAndPeerIsCopyProtected!
+            let (message, _) = messageAndPeerIsCopyProtected!
             switch source {
                 case let .peerMessagesAtId(_, chatLocation, customTag, chatLocationContextHolder):
                     if let tags = tagsForMessage(message) {
@@ -1488,7 +1488,6 @@ public class GalleryController: ViewController, StandalonePresentableController,
                             } else if index >= strongSelf.entries.count - 3 && strongSelf.hasRightEntries {
                                 reloadAroundIndex = strongSelf.entries.last?.entry.index
                             }
-                            let peerIsCopyProtected = false
                             if let reloadAroundIndex = reloadAroundIndex, let tag = strongSelf.tag {
                                 let namespaces: MessageIdNamespaces
                                 if Namespaces.Message.allScheduled.contains(message.id.namespace) {
