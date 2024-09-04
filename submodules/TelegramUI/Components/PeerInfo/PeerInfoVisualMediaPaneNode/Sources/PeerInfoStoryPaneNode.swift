@@ -2168,9 +2168,9 @@ public final class PeerInfoStoryPaneNode: ASDisplayNode, PeerInfoPaneNode, ASScr
             guard let item = strongSelf.itemGrid.item(at: point) else {
                 return false
             }
-            guard let layer = item.layer as? ItemLayer else {
-                return false
-            }
+//            guard let layer = item.layer as? ItemLayer else {
+//                return false
+//            }
 //            guard let storyItem = layer.item else {
 //                return false
 //            }
