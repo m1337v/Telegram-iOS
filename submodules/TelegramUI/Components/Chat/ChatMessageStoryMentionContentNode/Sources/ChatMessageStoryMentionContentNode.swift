@@ -207,41 +207,9 @@ public class ChatMessageStoryMentionContentNode: ChatMessageBubbleContentNode {
                             strongSelf.item = item
                             
                             let imageFrame = CGRect(origin: CGPoint(x: floorToScreenPixels((backgroundSize.width - imageSize.width) / 2.0), y: 15.0), size: imageSize).insetBy(dx: 6.0, dy: 6.0)
-                            if let selectedMedia {
+                            if let story, let selectedMedia {
                                 if mediaUpdated {
-                                    if false {
-                                        let maxImageSize = CGSize(width: 180.0, height: 180.0).aspectFitted(imageSize)
-                                        let boundingImageSize = maxImageSize
-                                        
-                                        var updateImageSignal: Signal<(TransformImageArguments) -> DrawingContext?, NoError>?
-                                        if let author = item.message.author {
-                                            updateImageSignal = peerAvatarCompleteImage(account: item.context.account, peer: EnginePeer(author), size: imageSize)
-                                            |> map { image in
-                                                return { arguments in
-                                                    let context = DrawingContext(size: arguments.drawingSize, scale: arguments.scale ?? 0.0, clear: true)
-                                                    context?.withContext { c in
-                                                        UIGraphicsPushContext(c)
-                                                        c.addEllipse(in: CGRect(origin: CGPoint(), size: arguments.drawingSize))
-                                                        c.clip()
-                                                        if let image {
-                                                            image.draw(in: arguments.imageRect)
-                                                        }
-                                                        UIGraphicsPopContext()
-                                                    }
-                                                    return context
-                                                }
-                                            }
-                                        }
-                                        if let updateImageSignal {
-                                            strongSelf.imageNode.setSignal(updateImageSignal, attemptSynchronously: synchronousLoads)
-                                        }
-                                        
-                                        let arguments = TransformImageArguments(corners: ImageCorners(radius: imageFrame.height / 2.0), imageSize: boundingImageSize, boundingSize: imageFrame.size, intrinsicInsets: UIEdgeInsets())
-                                        let apply = makeImageLayout(arguments)
-                                        apply()
-                                        
-                                        strongSelf.imageNode.frame = imageFrame
-                                    } else if let photo = selectedMedia as? TelegramMediaImage {
+                                    if let photo = selectedMedia as? TelegramMediaImage {
                                         let maxImageSize = photo.representations.last?.dimensions.cgSize ?? imageFrame.size
                                         let boundingImageSize = maxImageSize.aspectFilled(imageFrame.size)
                                         

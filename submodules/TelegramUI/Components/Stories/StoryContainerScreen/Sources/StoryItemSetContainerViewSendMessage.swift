@@ -978,158 +978,123 @@ final class StoryItemSetContainerSendMessage {
             return
         }
         
-        if false {
-            let presentationData = component.context.sharedContext.currentPresentationData.with({ $0 }).withUpdated(theme: component.theme)
-            let actionSheet = ActionSheetController(presentationData: presentationData)
-            
-            actionSheet.setItemGroups([
-                ActionSheetItemGroup(items: [
-                    ActionSheetButtonItem(title: presentationData.strings.Story_Context_CopyLink, color: .accent, action: { [weak self, weak view, weak actionSheet] in
-                        actionSheet?.dismissAnimated()
+        var preferredAction: ShareControllerPreferredAction?
+        if focusedItem.storyItem.isPublic && !component.slice.effectivePeer.isService {
+            preferredAction = .custom(action: ShareControllerAction(title: component.strings.Story_Context_CopyLink, action: {
+                let _ = ((component.context.engine.messages.exportStoryLink(peerId: peerId, id: focusedItem.storyItem.id))
+                         |> deliverOnMainQueue).start(next: { link in
+                    if let link {
+                        UIPasteboard.general.string = link
                         
-                        guard let self, let view else {
-                            return
-                        }
-                        self.performCopyLinkAction(view: view)
-                    })
-                ]),
-                ActionSheetItemGroup(items: [
-                    ActionSheetButtonItem(title: presentationData.strings.Common_Cancel, color: .accent, font: .bold, action: { [weak actionSheet] in
-                        actionSheet?.dismissAnimated()
-                    })
-                ])
-            ])
+                        let presentationData = component.context.sharedContext.currentPresentationData.with({ $0 }).withUpdated(theme: component.theme)
+                        component.presentController(UndoOverlayController(
+                            presentationData: presentationData,
+                            content: .linkCopied(text: presentationData.strings.Story_ToastLinkCopied),
+                            elevatedLayout: false,
+                            animateInAsReplacement: false,
+                            action: { _ in return false }
+                        ), nil)
+                    }
+                })
+            }))
+        }
             
-            actionSheet.dismissed = { [weak self, weak view] _ in
-                guard let self, let view else {
-                    return
-                }
-                self.actionSheet = nil
-                view.updateIsProgressPaused()
+        let shareController = ShareController(
+            context: component.context,
+            subject: .media(AnyMediaReference.standalone(media: TelegramMediaStory(storyId: StoryId(peerId: peerId, id: focusedItem.storyItem.id), isMention: false))),
+            preferredAction: preferredAction ?? .default,
+            externalShare: false,
+            immediateExternalShare: false,
+            forceTheme: defaultDarkColorPresentationTheme
+        )
+        shareController.shareStory = { [weak view] in
+            guard let view else {
+                return
             }
-            self.actionSheet = actionSheet
-            view.updateIsProgressPaused()
-            
-            component.presentController(actionSheet, nil)
-        } else {
-            var preferredAction: ShareControllerPreferredAction?
-            if focusedItem.storyItem.isPublic && !component.slice.effectivePeer.isService {
-                preferredAction = .custom(action: ShareControllerAction(title: component.strings.Story_Context_CopyLink, action: {
-                    let _ = ((component.context.engine.messages.exportStoryLink(peerId: peerId, id: focusedItem.storyItem.id))
-                             |> deliverOnMainQueue).start(next: { link in
-                        if let link {
-                            UIPasteboard.general.string = link
-                            
-                            let presentationData = component.context.sharedContext.currentPresentationData.with({ $0 }).withUpdated(theme: component.theme)
-                            component.presentController(UndoOverlayController(
-                                presentationData: presentationData,
-                                content: .linkCopied(text: presentationData.strings.Story_ToastLinkCopied),
-                                elevatedLayout: false,
-                                animateInAsReplacement: false,
-                                action: { _ in return false }
-                            ), nil)
-                        }
-                    })
-                }))
+            view.openStoryEditing(repost: true)
+        }
+        shareController.completed = { [weak view] peerIds in
+            guard let view, let component = view.component else {
+                return
             }
             
-            let shareController = ShareController(
-                context: component.context,
-                subject: .media(AnyMediaReference.standalone(media: TelegramMediaStory(storyId: StoryId(peerId: peerId, id: focusedItem.storyItem.id), isMention: false))),
-                preferredAction: preferredAction ?? .default,
-                externalShare: false,
-                immediateExternalShare: false,
-                forceTheme: defaultDarkColorPresentationTheme
+            let _ = (component.context.engine.data.get(
+                EngineDataList(
+                    peerIds.map(TelegramEngine.EngineData.Item.Peer.Peer.init)
+                )
             )
-            shareController.shareStory = { [weak view] in
-                guard let view else {
-                    return
-                }
-                view.openStoryEditing(repost: true)
-            }
-            shareController.completed = { [weak view] peerIds in
+            |> deliverOnMainQueue).start(next: { [weak view] peerList in
                 guard let view, let component = view.component else {
                     return
                 }
                 
-                let _ = (component.context.engine.data.get(
-                    EngineDataList(
-                        peerIds.map(TelegramEngine.EngineData.Item.Peer.Peer.init)
-                    )
-                )
-                |> deliverOnMainQueue).start(next: { [weak view] peerList in
-                    guard let view, let component = view.component else {
-                        return
-                    }
-                    
-                    let peers = peerList.compactMap { $0 }
-                    let presentationData = component.context.sharedContext.currentPresentationData.with { $0 }
-                    let text: String
-                    var savedMessages = false
-                    if peerIds.count == 1, let peerId = peerIds.first, peerId == component.context.account.peerId {
-                        text = presentationData.strings.Conversation_StoryForwardTooltip_SavedMessages_One
-                        savedMessages = true
+                let peers = peerList.compactMap { $0 }
+                let presentationData = component.context.sharedContext.currentPresentationData.with { $0 }
+                let text: String
+                var savedMessages = false
+                if peerIds.count == 1, let peerId = peerIds.first, peerId == component.context.account.peerId {
+                    text = presentationData.strings.Conversation_StoryForwardTooltip_SavedMessages_One
+                    savedMessages = true
+                } else {
+                    if peers.count == 1, let peer = peers.first {
+                        var peerName = peer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : peer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
+                        peerName = peerName.replacingOccurrences(of: "**", with: "")
+                        text = presentationData.strings.Conversation_StoryForwardTooltip_Chat_One(peerName).string
+                    } else if peers.count == 2, let firstPeer = peers.first, let secondPeer = peers.last {
+                        var firstPeerName = firstPeer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : firstPeer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
+                        firstPeerName = firstPeerName.replacingOccurrences(of: "**", with: "")
+                        var secondPeerName = secondPeer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : secondPeer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
+                        secondPeerName = secondPeerName.replacingOccurrences(of: "**", with: "")
+                        text = presentationData.strings.Conversation_StoryForwardTooltip_TwoChats_One(firstPeerName, secondPeerName).string
+                    } else if let peer = peers.first {
+                        var peerName = peer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
+                        peerName = peerName.replacingOccurrences(of: "**", with: "")
+                        text = presentationData.strings.Conversation_StoryForwardTooltip_ManyChats_One(peerName, "\(peers.count - 1)").string
                     } else {
-                        if peers.count == 1, let peer = peers.first {
-                            var peerName = peer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : peer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
-                            peerName = peerName.replacingOccurrences(of: "**", with: "")
-                            text = presentationData.strings.Conversation_StoryForwardTooltip_Chat_One(peerName).string
-                        } else if peers.count == 2, let firstPeer = peers.first, let secondPeer = peers.last {
-                            var firstPeerName = firstPeer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : firstPeer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
-                            firstPeerName = firstPeerName.replacingOccurrences(of: "**", with: "")
-                            var secondPeerName = secondPeer.id == component.context.account.peerId ? presentationData.strings.DialogList_SavedMessages : secondPeer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
-                            secondPeerName = secondPeerName.replacingOccurrences(of: "**", with: "")
-                            text = presentationData.strings.Conversation_StoryForwardTooltip_TwoChats_One(firstPeerName, secondPeerName).string
-                        } else if let peer = peers.first {
-                            var peerName = peer.displayTitle(strings: presentationData.strings, displayOrder: presentationData.nameDisplayOrder)
-                            peerName = peerName.replacingOccurrences(of: "**", with: "")
-                            text = presentationData.strings.Conversation_StoryForwardTooltip_ManyChats_One(peerName, "\(peers.count - 1)").string
-                        } else {
-                            text = ""
-                        }
+                        text = ""
                     }
-                    
-                    if let controller = component.controller() {
-                        let context = component.context
-                        let presentationData = component.context.sharedContext.currentPresentationData.with { $0 }
-                        controller.present(UndoOverlayController(
-                            presentationData: presentationData,
-                            content: .forward(savedMessages: savedMessages, text: text),
-                            elevatedLayout: false,
-                            animateInAsReplacement: false,
-                            action: { [weak controller] action in
-                                if savedMessages, action == .info {
-                                    let _ = (context.engine.data.get(TelegramEngine.EngineData.Item.Peer.Peer(id: context.account.peerId))
-                                    |> deliverOnMainQueue).start(next: { peer in
-                                        guard let controller, let peer else {
-                                            return
-                                        }
-                                        guard let navigationController = controller.navigationController as? NavigationController else {
-                                            return
-                                        }
-                                        context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: context, chatLocation: .peer(peer), forceOpenChat: true))
-                                    })
-                                }
-                                return false
-                            }
-                        ), in: .current)
-                    }
-                })
-            }
-            
-            self.shareController = shareController
-            view.updateIsProgressPaused()
-            
-            shareController.dismissed = { [weak self, weak view] _ in
-                guard let self, let view else {
-                    return
                 }
-                self.shareController = nil
-                view.updateIsProgressPaused()
-            }
-            
-            controller.present(shareController, in: .window(.root))
+                
+                if let controller = component.controller() {
+                    let context = component.context
+                    let presentationData = component.context.sharedContext.currentPresentationData.with { $0 }
+                    controller.present(UndoOverlayController(
+                        presentationData: presentationData,
+                        content: .forward(savedMessages: savedMessages, text: text),
+                        elevatedLayout: false,
+                        animateInAsReplacement: false,
+                        action: { [weak controller] action in
+                            if savedMessages, action == .info {
+                                let _ = (context.engine.data.get(TelegramEngine.EngineData.Item.Peer.Peer(id: context.account.peerId))
+                                |> deliverOnMainQueue).start(next: { peer in
+                                    guard let controller, let peer else {
+                                        return
+                                    }
+                                    guard let navigationController = controller.navigationController as? NavigationController else {
+                                        return
+                                    }
+                                    context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: context, chatLocation: .peer(peer), forceOpenChat: true))
+                                })
+                            }
+                            return false
+                        }
+                    ), in: .current)
+                }
+            })
         }
+            
+        self.shareController = shareController
+        view.updateIsProgressPaused()
+        
+        shareController.dismissed = { [weak self, weak view] _ in
+            guard let self, let view else {
+                return
+            }
+            self.shareController = nil
+            view.updateIsProgressPaused()
+        }
+        
+        controller.present(shareController, in: .window(.root))
     }
     
     func performShareTextAction(view: StoryItemSetContainerComponent.View, text: String) {
