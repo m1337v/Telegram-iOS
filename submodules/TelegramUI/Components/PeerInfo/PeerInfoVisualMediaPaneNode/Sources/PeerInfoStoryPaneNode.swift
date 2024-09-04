@@ -1150,7 +1150,7 @@ private final class SparseItemGridBindingImpl: SparseItemGridBinding {
     }
 
     func createLayer(item: SparseItemGrid.Item) -> SparseItemGridLayer? {
-        if let item = item as? VisualMediaItem {
+        if let _ = item as? VisualMediaItem {
             let layer = ItemLayer()
             setLayerDisableScreenshots(layer, false)
             return layer
@@ -1739,7 +1739,7 @@ public final class PeerInfoStoryPaneNode: ASDisplayNode, PeerInfoPaneNode, ASScr
         self.itemGridBinding = SparseItemGridBindingImpl(
             context: context,
             directMediaImageCache: self.directMediaImageCache,
-            captureProtected: captureProtected,
+            captureProtected: false,
             displayPrivacy: isProfileEmbedded
         )
 
@@ -2182,7 +2182,6 @@ public final class PeerInfoStoryPaneNode: ASDisplayNode, PeerInfoPaneNode, ASScr
             }
             
             if !strongSelf.canManageStories {
-                storyItem.story.isForwardingDisabled = false
                 return true
             }
 
