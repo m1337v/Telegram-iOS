@@ -2171,9 +2171,9 @@ public final class PeerInfoStoryPaneNode: ASDisplayNode, PeerInfoPaneNode, ASScr
             guard let layer = item.layer as? ItemLayer else {
                 return false
             }
-            guard let storyItem = layer.item else {
-                return false
-            }
+//            guard let storyItem = layer.item else {
+//                return false
+//            }
 
             if let result = strongSelf.view.hitTest(point, with: nil) {
                 if result.asyncdisplaykit_node is SparseItemGridScrollingArea {
