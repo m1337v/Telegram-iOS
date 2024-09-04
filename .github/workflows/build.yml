@@ -27,14 +27,6 @@ jobs:
           cp -R $GITHUB_WORKSPACE /Users/Shared/
           mv /Users/Shared/$(basename $GITHUB_WORKSPACE) /Users/Shared/telegram-ios
 
-      - name: Cache Bazel
-        uses: actions/cache@v2
-        with:
-          path: /private/var/tmp/_bazel_containerhost
-          key: ${{ runner.os }}-bazel-cache-${{ hashFiles('**/WORKSPACE') }}
-          restore-keys: |
-            ${{ runner.os }}-bazel-cache-
-
       - name: Build the App
         run: |
           set -x
@@ -48,6 +40,11 @@ jobs:
           export BUILD_NUMBER="$COMMIT_COUNT"
           echo "BUILD_NUMBER=$(echo $BUILD_NUMBER)" >> $GITHUB_ENV
           echo "APP_VERSION=$(echo $APP_VERSION)" >> $GITHUB_ENV
+          
+          # Suppress warnings by setting environment variables or manipulating the shell environment
+          export SWIFT_SUPPRESS_WARNINGS=1
+          
+          # Run the build command
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py \
             --bazelUserRoot="$BAZEL_USER_ROOT" \
@@ -55,8 +52,7 @@ jobs:
             --configurationPath="build-system/appstore-configuration.json" \
             --codesigningInformationPath=build-system/fake-codesigning \
             --configuration=release_arm64 \
-            --buildNumber="$BUILD_NUMBER" \
-            --swiftcopt=-suppress-warnings
+            --buildNumber="$BUILD_NUMBER"
 
       - name: Create Release
         id: create_release
