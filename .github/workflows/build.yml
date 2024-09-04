@@ -23,31 +23,31 @@ jobs:
 
       - name: Create canonical source directory
         run: |
-          set -x
           sudo mkdir -p /Users/Shared
           cp -R $GITHUB_WORKSPACE /Users/Shared/
           mv /Users/Shared/$(basename $GITHUB_WORKSPACE) /Users/Shared/telegram-ios
 
+      - name: Cache Bazel
+        uses: actions/cache@v2
+        with:
+          path: /private/var/tmp/_bazel_containerhost
+          key: ${{ runner.os }}-bazel-cache-${{ hashFiles('**/WORKSPACE') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-cache-
+
       - name: Build the App
         run: |
           set -x
-          # source code paths are included in the final binary, so we need to make them stable across builds
           SOURCE_DIR=/Users/Shared/telegram-ios
-
-           # use canonical bazel root
           BAZEL_USER_ROOT="/private/var/tmp/_bazel_containerhost"
-
           cd $SOURCE_DIR
-
           BUILD_NUMBER_OFFSET="$(cat build_number_offset)"
-          
           export APP_VERSION=$(cat versions.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["app"]);')
           export COMMIT_COUNT=$(git rev-list --count HEAD)
           export COMMIT_COUNT="$(($COMMIT_COUNT+$BUILD_NUMBER_OFFSET))"
           export BUILD_NUMBER="$COMMIT_COUNT"
           echo "BUILD_NUMBER=$(echo $BUILD_NUMBER)" >> $GITHUB_ENV
           echo "APP_VERSION=$(echo $APP_VERSION)" >> $GITHUB_ENV
-
           python3 build-system/Make/ImportCertificates.py --path build-system/fake-codesigning/certs
           python3 -u build-system/Make/Make.py \
             --bazelUserRoot="$BAZEL_USER_ROOT" \
@@ -55,18 +55,8 @@ jobs:
             --configurationPath="build-system/appstore-configuration.json" \
             --codesigningInformationPath=build-system/fake-codesigning \
             --configuration=release_arm64 \
-            --buildNumber="$BUILD_NUMBER"
-
-          # Collect IPA
-          OUTPUT_PATH="build/artifacts"
-          rm -rf "$OUTPUT_PATH"
-          mkdir -p "$OUTPUT_PATH"
-          cp bazel-bin/Telegram/Telegram.ipa "$OUTPUT_PATH/"
-
-          # Collect dSYM files
-          mkdir -p build/DSYMs
-          cp -R bazel-bin/Telegram/*.dSYM build/DSYMs/
-          zip -r "$OUTPUT_PATH/Telegram.DSYMs.zip" build/DSYMs 1>/dev/null
+            --buildNumber="$BUILD_NUMBER" \
+            --swiftcopt=-suppress-warnings
 
       - name: Create Release
         id: create_release
