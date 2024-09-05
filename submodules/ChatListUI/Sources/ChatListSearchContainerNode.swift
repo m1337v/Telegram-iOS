@@ -818,7 +818,7 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
                                 }
                             }
                             
-                              let text: String = ""
+//                            let text: String = ""
 //                            switch type {
 //                            case .group:
 //                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledGroup : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledGroup
@@ -829,7 +829,7 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
 //                            case .user:
 //                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledSecret : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledSecret
 //                            }
-                            
+//
 //                            strongSelf.copyProtectionTooltipController?.dismiss()
 //                            let tooltipController = TooltipController(content: .text(text), baseFontSize: strongSelf.presentationData.listsFontSize.baseDisplaySize, dismissByTapOutside: true, dismissImmediatelyOnLayoutUpdate: true)
 //                            strongSelf.copyProtectionTooltipController = tooltipController
@@ -838,13 +838,13 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
 //                                    strongSelf.copyProtectionTooltipController = nil
 //                                }
 //                            }
-                            strongSelf.present?(tooltipController, TooltipControllerPresentationArguments(sourceNodeAndRect: {
-                                if let strongSelf = self {
-                                    let rect = node.view.convert(node.view.bounds, to: strongSelf.view).offsetBy(dx: 0.0, dy: 3.0)
-                                    return (strongSelf, rect)
-                                }
-                                return nil
-                            }))
+//                            strongSelf.present?(tooltipController, TooltipControllerPresentationArguments(sourceNodeAndRect: {
+//                                if let strongSelf = self {
+//                                    let rect = node.view.convert(node.view.bounds, to: strongSelf.view).offsetBy(dx: 0.0, dy: 3.0)
+//                                    return (strongSelf, rect)
+//                                }
+//                                return nil
+//                            }))
                         }
                     })
                 })
