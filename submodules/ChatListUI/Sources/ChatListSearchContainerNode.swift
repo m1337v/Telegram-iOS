@@ -796,14 +796,14 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
                         return messages
                     }
                     |> deliverOnMainQueue).startStandalone(next: { messages in
-                        if let strongSelf = self, !messages.isEmpty {
+                        if let _ = self, !messages.isEmpty {
                             enum PeerType {
                                 case group
                                 case channel
                                 case bot
                                 case user
                             }
-                            var type: PeerType = .group
+                            // var type: PeerType = .group
                             for message in messages {
                                 if let user = message.author?._asPeer() as? TelegramUser {
                                     if user.botInfo != nil {
