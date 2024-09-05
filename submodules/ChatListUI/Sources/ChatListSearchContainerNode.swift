@@ -819,16 +819,16 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
                             }
                             
                             // TODO does this need fixing?
-                            let text: String = ""
+                            var text: String = ""
                             switch type {
                             case .group:
-                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledGroup : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledGroup
+                                text = ""
                             case .channel:
-                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledChannel : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledChannel
+                                text = ""
                             case .bot:
-                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledBot : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledBot
+                                text = ""
                             case .user:
-                                text = save ? strongSelf.presentationData.strings.Conversation_CopyProtectionSavingDisabledSecret : strongSelf.presentationData.strings.Conversation_CopyProtectionForwardingDisabledSecret
+                                text = ""
                             }
 
                             strongSelf.copyProtectionTooltipController?.dismiss()
