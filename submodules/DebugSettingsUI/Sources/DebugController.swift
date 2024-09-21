@@ -102,6 +102,8 @@ private enum DebugControllerEntry: ItemListNodeEntry {
     case playlistPlayback(Bool)
     case enableQuickReactionSwitch(Bool)
     case disableReloginTokens(Bool)
+    case disableCallV2(Bool)
+    case experimentalCallMute(Bool)
     case liveStreamV2(Bool)
     case preferredVideoCodec(Int, String, String?, Bool)
     case disableVideoAspectScaling(Bool)
@@ -127,7 +129,7 @@ private enum DebugControllerEntry: ItemListNodeEntry {
             return DebugControllerSection.web.rawValue
         case .keepChatNavigationStack, .skipReadHistory, .dustEffect, .crashOnSlowQueries, .crashOnMemoryPressure:
             return DebugControllerSection.experiments.rawValue
-        case .clearTips, .resetNotifications, .crash, .fillLocalSavedMessageCache, .resetDatabase, .resetDatabaseAndCache, .resetHoles, .resetTagHoles, .reindexUnread, .resetCacheIndex, .reindexCache, .resetBiometricsData, .optimizeDatabase, .photoPreview, .knockoutWallpaper, .storiesExperiment, .storiesJpegExperiment, .playlistPlayback, .enableQuickReactionSwitch, .experimentalCompatibility, .enableDebugDataDisplay, .rippleEffect, .browserExperiment, .localTranscription, .enableReactionOverrides, .restorePurchases, .disableReloginTokens, .liveStreamV2:
+        case .clearTips, .resetNotifications, .crash, .fillLocalSavedMessageCache, .resetDatabase, .resetDatabaseAndCache, .resetHoles, .resetTagHoles, .reindexUnread, .resetCacheIndex, .reindexCache, .resetBiometricsData, .optimizeDatabase, .photoPreview, .knockoutWallpaper, .storiesExperiment, .storiesJpegExperiment, .playlistPlayback, .enableQuickReactionSwitch, .experimentalCompatibility, .enableDebugDataDisplay, .rippleEffect, .browserExperiment, .localTranscription, .enableReactionOverrides, .restorePurchases, .disableReloginTokens, .disableCallV2, .experimentalCallMute, .liveStreamV2:
             return DebugControllerSection.experiments.rawValue
         case .logTranslationRecognition, .resetTranslationStates:
             return DebugControllerSection.translation.rawValue
@@ -240,10 +242,14 @@ private enum DebugControllerEntry: ItemListNodeEntry {
             return 49
         case .enableQuickReactionSwitch:
             return 50
-        case .liveStreamV2:
+        case .disableCallV2:
             return 51
+        case .experimentalCallMute:
+            return 52
+        case .liveStreamV2:
+            return 53
         case let .preferredVideoCodec(index, _, _, _):
-            return 52 + index
+            return 54 + index
         case .disableVideoAspectScaling:
             return 100
         case .enableNetworkFramework:
@@ -1312,6 +1318,26 @@ private enum DebugControllerEntry: ItemListNodeEntry {
                     })
                 }).start()
             })
+        case let .disableCallV2(value):
+            return ItemListSwitchItem(presentationData: presentationData, title: "Disable Video Chat V2", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                let _ = arguments.sharedContext.accountManager.transaction ({ transaction in
+                    transaction.updateSharedData(ApplicationSpecificSharedDataKeys.experimentalUISettings, { settings in
+                        var settings = settings?.get(ExperimentalUISettings.self) ?? ExperimentalUISettings.defaultSettings
+                        settings.disableCallV2 = value
+                        return PreferencesEntry(settings)
+                    })
+                }).start()
+            })
+        case let .experimentalCallMute(value):
+            return ItemListSwitchItem(presentationData: presentationData, title: "[WIP] OS mic mute", value: value, sectionId: self.section, style: .blocks, updated: { value in
+                let _ = arguments.sharedContext.accountManager.transaction ({ transaction in
+                    transaction.updateSharedData(ApplicationSpecificSharedDataKeys.experimentalUISettings, { settings in
+                        var settings = settings?.get(ExperimentalUISettings.self) ?? ExperimentalUISettings.defaultSettings
+                        settings.experimentalCallMute = value
+                        return PreferencesEntry(settings)
+                    })
+                }).start()
+            })
         case let .liveStreamV2(value):
             return ItemListSwitchItem(presentationData: presentationData, title: "Live Stream V2", value: value, sectionId: self.section, style: .blocks, updated: { value in
                 let _ = arguments.sharedContext.accountManager.transaction ({ transaction in
@@ -1476,10 +1502,12 @@ private func debugControllerEntries(sharedContext: SharedAccountContext, present
         }
         entries.append(.playlistPlayback(experimentalSettings.playlistPlayback))
         entries.append(.enableQuickReactionSwitch(!experimentalSettings.disableQuickReaction))
+        entries.append(.disableCallV2(experimentalSettings.disableCallV2))
+        entries.append(.experimentalCallMute(experimentalSettings.experimentalCallMute))
         entries.append(.liveStreamV2(experimentalSettings.liveStreamV2))
     }
     
-    let codecs: [(String, String?)] = [
+    /*let codecs: [(String, String?)] = [
         ("No Preference", nil),
         ("H265", "H265"),
         ("H264", "H264"),
@@ -1489,7 +1517,7 @@ private func debugControllerEntries(sharedContext: SharedAccountContext, present
     
     for i in 0 ..< codecs.count {
         entries.append(.preferredVideoCodec(i, codecs[i].0, codecs[i].1, experimentalSettings.preferredVideoCodec == codecs[i].1))
-    }
+    }*/
 
     if isMainApp {
         entries.append(.disableVideoAspectScaling(experimentalSettings.disableVideoAspectScaling))
